@@ -1,0 +1,25 @@
+/* .container {
+  width: 100%;
+} */
+
+/* .inner-container {
+  width: 66%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+@media (min-width: 768) {
+  .inner-container {
+    width: 66.666%;
+  }
+} */
+
+.container-xxl .text-center img {
+  width: 200px;
+  height: 180px;
+}
+
+/* .inner-container .input-group {
+  max-width: 66%;
+} */
