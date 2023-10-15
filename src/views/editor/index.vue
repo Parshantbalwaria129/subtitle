@@ -153,12 +153,22 @@
                 </div>
 
                 <div class="main-scale">
-                    <div class="scale-container">
+                    <div class="scale-container" ref="scaleContainer">
                         <div class="scale">
                             <div class="scale-second-loop" v-for="(second, index) in scaleSeconds" :key="index">
-                                <div class="second-unit" :style="secondUnitStyle">
-                                    <div class="second-unit-text">{{ second }}</div>
+                                <div class="second-unit" ref="subtitleUnit" :style="secondUnitStyle">
+                                    <div class="mili-second-loop" v-for="(ms, index) in 10" :key="index">
+                                        <div class="mili-second-unit">
+                                        </div>
+                                    </div>
                                 </div>
+                                <div class="second-unit-text">{{ second }}</div>
+                            </div>
+                        </div>
+                        <div class="scale-subtitle">
+                            <div class="subtitle-loop" v-for="(cardData, index) in subtitleFile" :key="index"
+                                :style="setSubtitlePostion(cardData)">
+                                <div class="subtitle-text">{{ cardData.subtitle }}</div>
                             </div>
                         </div>
                     </div>
@@ -206,9 +216,9 @@ export default {
                 order: 'asc'
             },
             scaleSeconds: [],
-            totalSecondsInScale: 15,
-            viewSecondsOnScale: 7,
+            viewSecondsSizeOnScale: 100,
             videoDuration: null,
+
 
 
         }
@@ -220,14 +230,38 @@ export default {
     },
 
     computed: {
+        setSubtitlePostion() {
+            return (cardData) => {
+                const startTime = this.formatTimeNew(cardData.startTimeStamp);
+                const endTime = this.formatTimeNew(cardData.endTimeStamp);
+                const duration = endTime - startTime;
+
+                return {
+                    left: `${20 + (startTime * this.viewSecondsSizeOnScale)}px`,
+                    width: `calc(${duration * this.viewSecondsSizeOnScale}px)`,
+                };
+            }
+
+
+        },
+
         secondUnitStyle() {
             return {
-                width: `calc(${100 / this.viewSecondsOnScale}vw - 1px)`
+                width: `calc(${this.viewSecondsSizeOnScale}%)`
             };
         },
     },
 
     methods: {
+        handleSrcoll() {
+            const scaleContainer = this.$refs.scaleContainer;
+            const subtitleLoop = scaleContainer.querySelector('.subtitle-loop');
+            const subtitleLoopStyle = {
+                left: `-${subtitleLoop.offsetLeft}px`
+            }
+            Object.assign(subtitleLoop.style, subtitleLoopStyle);
+        },
+
         applyshorting() {
             if ((this.sortBy.field === 'start') && (this.sortBy.order === 'asc')) {
                 this.subtitleFile.sort((a, b) => {
@@ -386,7 +420,6 @@ export default {
             })
         },
 
-
         backToHome() {
             this.$router.push('/')
             this.$store.commit("removeVideoFile")
@@ -399,15 +432,13 @@ export default {
 
             videoElement.onloadedmetadata = () => {
                 this.videoDuration = videoElement.duration;
-                this.totalSecondsInScale = Math.floor(this.videoDuration) + 2
-                for (let i = 0; i < this.totalSecondsInScale; i++) {
-                    for (let j = 0; j < 10; j++) {
-                        const unit = i + j / 10
-                        this.scaleSeconds.push(unit)
-                    }
+
+                for (let i = 0; i < (this.videoDuration + 1); i++) {
+                    const minutes = Math.floor(i / 60);
+                    const second = i % 60;
+                    this.scaleSeconds.push(`${String(minutes).padStart(1, '0')}:${String(second).padStart(2, '0')}`)
                 }
-                console.log(this.scaleSeconds)
-                this.scaleSeconds = Array.from()
+
                 if (this.videoDuration < 3600) {
                     this.timeFormat = "00:00:00"
                     this.dataMaskFormat = "99:99:99"
@@ -415,6 +446,28 @@ export default {
                 else {
                     this.timeFormat = "00:00:00:00"
                     this.dataMaskFormat = "99:99:99:99"
+                }
+
+                if (this.subtitleFile.length === 0) {
+                    if (this.timeFormat === "00:00:00") {
+
+                        this.subtitleFile.push({
+                            startTimeStamp: '00:00:00',
+                            endTimeStamp: '00:02:00',
+                            subtitle: '',
+                            subtitleId: uuidv4(),
+
+                        })
+                    }
+                    else {
+                        this.subtitleFile.push({
+                            startTimeStamp: '00:00:00:00',
+                            endTimeStamp: '00:00:02:00',
+                            subtitle: '',
+                            subtitleId: uuidv4(),
+
+                        })
+                    }
                 }
             }
         },
@@ -439,7 +492,7 @@ export default {
         formatTimeNew(timeString) {
             if (this.timeFormat == "00:00:00:00") {
                 const [hours, minutes, seconds, milliseconds] = timeString.split(":").map(Number);
-                return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+                return hours * 3600 + minutes * 60 + seconds + milliseconds / 100;
             } else {
                 const [minutes, seconds, milliseconds] = timeString.split(":").map(Number);
                 return minutes * 60 + seconds + milliseconds / 1000;
@@ -617,18 +670,13 @@ export default {
         },
 
         setFocusOut(cardId) {
-            console.log(this.currentFocusedCardId)
-            console.log(cardId)
-            console.log("=========================================")
             if (cardId !== this.currentFocusedCardId) {
-                console.log("inside if")
                 this.currentFocusedCardId = null
             }
 
         },
 
         setFocusIn(cardId) {
-            console.log(this.currentFocusedCardId)
             if (this.currentFocusedCardId === null) {
                 this.currentFocusedCardId = cardId
                 this.$store.commit("saveSubtitleFile")
@@ -703,28 +751,6 @@ export default {
         this.setTimeFormatAndOtherUnits();
         this.subtitleFile = this.$store.state.subtitleFile;
 
-        if (this.subtitleFile.length === 0) {
-            if (this.timeFormat === "00:00:00") {
-
-                this.subtitleFile.push({
-                    startTimeStamp: '00:00:00',
-                    endTimeStamp: '00:02:00',
-                    subtitle: '',
-                    subtitleId: uuidv4(),
-
-                })
-            }
-            else {
-                this.subtitleFile.push({
-                    startTimeStamp: '00:00:00:00',
-                    endTimeStamp: '00:00:02:00',
-                    subtitle: '',
-                    subtitleId: uuidv4(),
-
-                })
-            }
-        }
-
         const videoElement = this.$refs.videoPlayer;
 
         videoElement.addEventListener('timeupdate', () => {
@@ -733,13 +759,7 @@ export default {
 
             this.displaySubtitle(currentTime)
 
-
         })
-
-
-
-
-
     }
 }
 </script>

@@ -327,10 +327,10 @@ body {
   width: 100%;
   border: 1px solid var(--bs-body-border-color);
   border-radius: 10px;
-  display: flex;
+  /* display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; */
   color: var(--right-body-text-color);
   overflow-y: hidden;
   -ms-overflow-style: none; /* IE and Edge */
@@ -338,7 +338,7 @@ body {
 }
 
 .main-scale .scale-container .scale {
-  height: 100%;
+  height: 20%;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -350,7 +350,9 @@ body {
 
 .scale-container .scale-second-loop {
   height: 100%;
-  width: 100%;
+  width: 100px;
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 
 /* .scale-container .scale-second-loop .second-unit {
@@ -358,15 +360,72 @@ body {
   border-left: 1px solid var(--bs-body-border-color);
 } */
 
-.scale-container .scale-second-loop .second-unit {
-  height: 7%;
+.scale-second-loop .second-unit-text {
+  font-size: xx-small;
+  position: relative;
+  left: -9px;
+}
+
+.scale .scale-second-loop .second-unit {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--right-body-text-color);
+
+  height: 20%;
   border-left: 1px solid var(--bs-body-border-color);
   font-size: x-small;
 }
 
-.scale-second-loop .second-unit .second-unit-text {
-  font-size: xx-small;
+.second-unit .mili-second-loop {
+  height: 100%;
+  width: 10px;
+}
+
+.second-unit .mili-second-loop .mili-second-unit {
+  height: 50%;
+  border-right: 1px solid var(--bs-body-border-color);
+  font-size: x-small;
   position: relative;
-  top: 8px;
-  left: -3px;
+  left: 1px;
+}
+
+/* .main-scale .scale-container .scale-subtitle {
+  height: 80%;
+  width: 100%;
+  display: inline-block;
+  align-items: center;
+}
+
+.scale-container .subtitle-loop {
+  height: 10%;
+  padding-top: 10px;
+  border: 1px solid aqua;
+  border-radius: 4px;
+  position: absolute;
+} */
+
+.main-scale .scale-container .scale-subtitle {
+  height: 80%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.scale-container .subtitle-loop {
+  height: 60%;
+  border: 1px solid red;
+  border-radius: 4px;
+  position: relative;
+}
+
+.scale-container .subtitle-loop .subtitle-text {
+  border: 1px solid aqua;
+  border-radius: 4px;
+  height: 100%;
+  width: 100%;
+  text-align: center;
 }
