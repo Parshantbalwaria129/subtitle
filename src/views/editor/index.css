@@ -386,7 +386,8 @@ body {
 }
 
 .main-scale .scale-container .scale-subtitle {
-  height: 80%;
+  margin-top: 15px;
+  height: 50%;
   width: 100%;
   display: flex;
   align-items: center;
@@ -395,7 +396,7 @@ body {
 }
 
 .scale-container .subtitle-loop {
-  height: 60%;
+  height: 100%;
   position: absolute;
 }
 
@@ -410,31 +411,21 @@ body {
   resize: none;
 }
 
-.scale-container .subtitle-loop .subtitle-text:hover {
+.scale-container .subtitle-loop .subtitle-text:hover,
+.scale-container .subtitle-loop .focus {
   border: 1px solid var(--bs-subtitle-border-color-hover);
 }
 
-.subtitle-loop .left-handle {
+.scale-subtitle .left-handle,
+.scale-subtitle .right-handle {
   top: 0;
-  /* left: -3px; */
-  /* left: 40px; */
   position: absolute;
   height: 100%;
   width: 6px;
   border-radius: 4px;
   background-color: var(--bs-subtitle-border-color);
   z-index: 10;
-}
-
-.subtitle-loop .right-handle {
-  top: 0;
-  /* left: 60px; */
-  position: absolute;
-  height: 100%;
-  width: 6px;
-  border-radius: 4px;
-  background-color: var(--bs-subtitle-border-color);
-  z-index: 10;
+  cursor: col-resize !important;
 }
 
 .cst-pointer .cst-pointer-triangle {

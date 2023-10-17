@@ -170,16 +170,13 @@
                             </div>
                         </div>
                         <div class="scale-subtitle">
-
                             <div class="subtitle-loop" ref="subtitleContainer" v-for="(cardData, index) in subtitleFile"
-                                :key="index" :style="{ left: `${cardData.left}px`, width: `${cardData.width}px` }"
-                                :class="cardData.subtitleId">
-                                <textarea class="subtitle-text" v-model="cardData.subtitle" rows="2"></textarea>
-                                <!-- <div class="right-handle" :style="setRightHandle(cardData)"></div> -->
+                                :key="index" :style="{ left: `${cardData.left}px`, width: `${cardData.width}px` }">
+                                <textarea class="subtitle-text" :class="{ focus: checkFocus(cardData.subtitleId) }"
+                                    v-model="cardData.subtitle" rows="2"></textarea>
                             </div>
-                            <div class="left-handle"></div>
-                            <div class="right-handle"></div>
-
+                            <div v-drag="{ axis: 'x' }" class="left-handle" v-if="showHandle" :style="{ left: computeLeftHandle }"></div>
+                            <div v-drag="{ axis: 'x' }" class="right-handle" v-if="showHandle" :style="{ left: computeRightHandle }"></div>
                         </div>
 
                     </div>
@@ -220,6 +217,7 @@ export default {
             currentSubtitle: '',
             subtitleAvailable: false,
             currentFocusedCardId: null,
+            showHandle: false,
             selectedSubtitleFile: null,
             subtitleFileName: '',
             sortBy: {
@@ -230,51 +228,51 @@ export default {
             viewSecondsSizeOnScale: 100,
             videoDuration: 0,
             scaleSubtitleCard: [],
-
         }
     },
 
 
     computed: {
-        // setRightHandle() {
-        //     return (cardData) => {
-        //         const element = document.getElementsByClassName(cardData.subtitleId);
-        //         let parentLeft = 0;
-        //         if (element.length > 0) {
-        //             var parenetElement = element[0];
-        //             const parenetElementCSS = getComputedStyle(parenetElement);
+        computeLeftHandle() {
+            if (this.currentFocusedCardId === null) {
+                return '0px'
 
-        //             parentLeft = parenetElementCSS.left;
-        //         }
-        //         return {
-        //             left: `calc(${parentLeft} - 3px)`,
-        //         };
-        //     }
-        // },
+            }
 
-        // setLeftHandle() {
-        //     return (cardData) => {
-        //         const startTime = this.formatTimeToDisplay(cardData.startTimeStamp);
-        //         return {
-        //             left: `${(startTime * this.viewSecondsSizeOnScale) - 3}px`,
-        //         };
-        //     }
-        // },
+            else {
+                const value = this.subtitleFile.find(card => card.subtitleId === this.currentFocusedCardId).left;
+                console.log("left", value)
+                return `${value - 3}px`
+            }
+        },
 
-        // setSubtitlePostion() {
-        //     return (cardData) => {
-        //         const startTime = this.formatTimeToDisplay(cardData.startTimeStamp);
-        //         const endTime = this.formatTimeToDisplay(cardData.endTimeStamp);
-        //         const duration = endTime - startTime;
+        computeRightHandle() {
+            if (this.currentFocusedCardId === null) {
+                return '0px'
 
-        //         return {
-        //             left: `${10 + (startTime * this.viewSecondsSizeOnScale)}px`,
-        //             width: `calc(${duration * this.viewSecondsSizeOnScale}px)`,
-        //             'min-width': `calc(${(duration * this.viewSecondsSizeOnScale).toFixed(2)}px)`,
-        //         };
-        //     }
+            }
+            else {
+                const cardData = this.subtitleFile.find(card => card.subtitleId === this.currentFocusedCardId);
+                console.log("left", cardData.left)
+                console.log("width", cardData.width)
+                console.log(this.currentFocusedCardId)
+                console.log("Right", cardData.left + cardData.width - 3)
 
+                return `${cardData.left + cardData.width - 3}px`
+            }
+        },
 
+        checkFocus() {
+            return (id) => {
+                if (this.currentFocusedCardId === null) {
+                    return false
+                } else if (this.currentFocusedCardId === id) {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        },
         secondUnitStyle() {
             return {
                 width: `calc(${this.viewSecondsSizeOnScale}%)`
@@ -283,6 +281,9 @@ export default {
     },
 
     methods: {
+        printt(value) {
+            console.log(value)
+        },
 
         formatTimeToDisplay(timeString) {
             if (this.timeFormat == "00:00:00:00") {
@@ -499,18 +500,33 @@ export default {
 
         updateStartTimestamp(value, currentId) {
 
-            const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
-
-            this.subtitleFile[index].startTimeStamp = value;
+            const result = this.updateLeftAndWidth(value, this.subtitleFile.find(card => card.subtitleId === currentId).endTimeStamp)
+            const cardData = {
+                ...this.subtitleFile.find(card => card.subtitleId === currentId),
+                startTimeStamp: value,
+                left: result.left,
+                width: result.width
+            }
+            this.$utils.updateSubtitle(cardData, currentId)
+            // this.subtitleFile = this.$utils.getSubtitleFile()
 
         },
 
         updateEndTimestamp(value, currentId) {
 
-            const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
+            // const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
 
-            this.subtitleFile[index].endTimeStamp = value;
+            // this.subtitleFile[index].endTimeStamp = value;
 
+            // this.$utils.updateFile(this.subtitleFile)
+            const result = this.updateLeftAndWidth(this.subtitleFile.find(card => card.subtitleId === currentId).startTimeStamp, value)
+            const cardData = {
+                ...this.subtitleFile.find(card => card.subtitleId === currentId),
+                endTimeStamp: value,
+                left: result.left,
+                width: result.width
+            }
+            this.$utils.updateSubtitle(cardData, currentId)
         },
 
         updateSubtitle(value, currentId) {
@@ -518,6 +534,8 @@ export default {
             const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
 
             this.subtitleFile[index].subtitle = value;
+
+            this.$utils.updateFile(this.subtitleFile)
 
         },
 
@@ -599,33 +617,74 @@ export default {
 
 
         deleteCurrentCard(currentId) {
-
-            const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
-
-            if (this.subtitleFile.length >= 2) {
-
-                this.subtitleFile.splice(index, 1)
-
+            if (this.subtitleFile.length === 1) {
+                if (this.timeFormat === '00:00:00:00') {
+                    const cardData = this.addLeftAndWidth({
+                        startTimeStamp: '00:00:00:00',
+                        endTimeStamp: '00:00:02:00',
+                        subtitle: '',
+                    })
+                    this.subtitleFile[0].startTimeStamp = cardData.startTimeStamp
+                    this.subtitleFile[0].endTimeStamp = cardData.endTimeStamp
+                    this.subtitleFile[0].subtitle = cardData.subtitle
+                    this.subtitleFile[0].left = cardData.left
+                    this.subtitleFile[0].width = cardData.width
+                    this.$utils.updateFile(this.subtitleFile)
+                } else {
+                    const cardData = this.addLeftAndWidth({
+                        startTimeStamp: '00:00:00',
+                        endTimeStamp: '00:02:00',
+                        subtitle: '',
+                    })
+                    this.subtitleFile[0].startTimeStamp = cardData.startTimeStamp
+                    this.subtitleFile[0].endTimeStamp = cardData.endTimeStamp
+                    this.subtitleFile[0].subtitle = cardData.subtitle
+                    this.subtitleFile[0].left = cardData.left
+                    this.subtitleFile[0].width = cardData.width
+                    this.$utils.updateFile(this.subtitleFile)
+                }
+                this.currentFocusedCardId = null
+                this.showHandle = false
+                return
             }
+            else {
+                if (this.currentFocusedCardId === currentId) {
+                    this.currentFocusedCardId = null
+                    this.showHandle = false
+                }
+                const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
+                this.subtitleFile.splice(index, 1)
+                this.$utils.updateFile(this.subtitleFile)
+            }
+            // const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
+
+
         },
 
         setFocusOut(cardId) {
+
             if (cardId !== this.currentFocusedCardId) {
                 this.currentFocusedCardId = null
+                this.showHandle = false
+            } else {
+                this.currentFocusedCardId = cardId
+                this.showHandle = true
             }
-
         },
 
         setFocusIn(cardId) {
+
             if (this.currentFocusedCardId === null) {
-                this.currentFocusedCardId = cardId
-                this.$store.commit("saveSubtitleFile", this.subtitleFile)
+                this.$utils.updateFile(this.subtitleFile)
                 this.applyshorting()
             }
+            this.currentFocusedCardId = cardId
+            this.showHandle = true
+
         },
 
         saveSubtitles() {
-            this.$store.commit("saveSubtitleFile", this.subtitleFile)
+            this.$utils.updateFile(this.subtitleFile)
             this.subtitleFile.sort((a, b) => {
                 return this.formatTimeNew(a.startTimeStamp) - this.formatTimeNew(b.startTimeStamp)
             })
@@ -682,15 +741,28 @@ export default {
             return srtContent;
         },
 
+        updateLeftAndWidth(startTimeStamp, endTimeStamp) {
+            const startTime = this.formatTimeToDisplay(startTimeStamp);
+            const endTime = this.formatTimeToDisplay(endTimeStamp);
+            const duration = endTime - startTime;
+            const result = {
+                left: 10 + parseInt(startTime * this.viewSecondsSizeOnScale),
+                width: parseInt(duration * this.viewSecondsSizeOnScale)
+            }
+            return result
+        },
+
         addLeftAndWidth(cardData) {
             const startTime = this.formatTimeToDisplay(cardData.startTimeStamp);
             const endTime = this.formatTimeToDisplay(cardData.endTimeStamp);
             const duration = endTime - startTime;
+
             const newObj = {
                 ...cardData,
-                left: 10 + (startTime * this.viewSecondsSizeOnScale),
-                width: (duration * this.viewSecondsSizeOnScale)
+                left: 10 + parseInt(startTime * this.viewSecondsSizeOnScale),
+                width: parseInt(duration * this.viewSecondsSizeOnScale)
             }
+            console.log(newObj)
             return newObj
         },
 
