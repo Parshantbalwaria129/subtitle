@@ -302,24 +302,9 @@ body {
   cursor: pointer;
 }
 
-:root {
-  --right-bg-color: #262a2d;
-  --right-body-text-color: #dee2e6;
-  --right-body-lg-text-color: #fff;
-  --model-lines-color: #aba5a5c0;
-  --right-text-primary-color: #084298;
-  --left-bg-color: #353a3e;
-  --bottom-bg-color: #212529;
-  --bs-body-border-color: #575a5c;
-}
-
-.bottom-container .main-scale .scale-container::-webkit-scrollbar {
-  display: none;
-}
-
 .main-container .bottom-container .main-scale {
   height: 70%;
-  margin: 10px 8px;
+  margin: 7px 8px;
 }
 
 .main-scale .scale-container {
@@ -327,14 +312,28 @@ body {
   width: 100%;
   border: 1px solid var(--bs-body-border-color);
   border-radius: 10px;
-  /* display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center; */
   color: var(--right-body-text-color);
-  overflow-y: hidden;
+  overflow-y: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+::-webkit-scrollbar {
+  width: 5px !important;
+  height: 7px !important;
+  padding-bottom: 10px;
+  /* display: none; */
+}
+
+/* Customize the scrollbar thumb (the draggable part) */
+::-webkit-scrollbar-thumb {
+  background-color: #555; /* Background color */
+  border-radius: 5px; /* Rounded corners */
+}
+
+/* Customize the scrollbar track */
+::-webkit-scrollbar-track {
+  background: #383636; /* Track background color */
 }
 
 .main-scale .scale-container .scale {
@@ -343,22 +342,16 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  position: relative;
   color: var(--right-body-text-color);
   margin-left: 10px;
 }
-
-.scale-container .scale-second-loop {
+*/ .scale-container .scale-second-loop {
   height: 100%;
   width: 100px;
   flex-grow: 0;
   flex-shrink: 0;
 }
-
-/* .scale-container .scale-second-loop .second-unit {
-  margin-left: 10px;
-  border-left: 1px solid var(--bs-body-border-color);
-} */
 
 .scale-second-loop .second-unit-text {
   font-size: xx-small;
@@ -374,7 +367,7 @@ body {
   align-items: center;
   color: var(--right-body-text-color);
 
-  height: 20%;
+  height: 50%;
   border-left: 1px solid var(--bs-body-border-color);
   font-size: x-small;
 }
@@ -392,40 +385,94 @@ body {
   left: 1px;
 }
 
-/* .main-scale .scale-container .scale-subtitle {
-  height: 80%;
-  width: 100%;
-  display: inline-block;
-  align-items: center;
-}
-
-.scale-container .subtitle-loop {
-  height: 10%;
-  padding-top: 10px;
-  border: 1px solid aqua;
-  border-radius: 4px;
-  position: absolute;
-} */
-
 .main-scale .scale-container .scale-subtitle {
   height: 80%;
   width: 100%;
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
+  position: relative;
 }
 
 .scale-container .subtitle-loop {
   height: 60%;
-  border: 1px solid red;
-  border-radius: 4px;
-  position: relative;
+  position: absolute;
 }
 
 .scale-container .subtitle-loop .subtitle-text {
-  border: 1px solid aqua;
+  background-color: var(--left-bg-color);
+  color: var(--right-body-text-color);
+  border: 1px solid var(--bs-subtitle-border-color);
   border-radius: 4px;
   height: 100%;
   width: 100%;
   text-align: center;
+  resize: none;
+}
+
+.scale-container .subtitle-loop .subtitle-text:hover {
+  border: 1px solid var(--bs-subtitle-border-color-hover);
+}
+
+.subtitle-loop .left-handle {
+  top: 0;
+  /* left: -3px; */
+  /* left: 40px; */
+  position: absolute;
+  height: 100%;
+  width: 6px;
+  border-radius: 4px;
+  background-color: var(--bs-subtitle-border-color);
+  z-index: 10;
+}
+
+.subtitle-loop .right-handle {
+  top: 0;
+  /* left: 60px; */
+  position: absolute;
+  height: 100%;
+  width: 6px;
+  border-radius: 4px;
+  background-color: var(--bs-subtitle-border-color);
+  z-index: 10;
+}
+
+.cst-pointer .cst-pointer-triangle {
+  position: absolute;
+  top: -0;
+  left: 667px;
+  width: 0;
+  height: 0;
+  z-index: 10;
+
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--right-body-text-color);
+}
+
+/* .scale-subtitle .cst-pointer .cst-pointer-traingle:hover {
+  border-right: 10px solid var(--bs-subtitle-border-color-hover);
+} */
+
+.cst-pointer .cst-pointer-line {
+  position: absolute;
+  top: 0;
+  left: 670px;
+  width: 1px;
+  height: 420%;
+  z-index: 10;
+  background-color: var(--right-body-text-color);
+}
+
+:root {
+  --right-bg-color: #262a2d;
+  --right-body-text-color: #dee2e6;
+  --right-body-lg-text-color: #fff;
+  --model-lines-color: #aba5a5c0;
+  --right-text-primary-color: #084298;
+  --left-bg-color: #353a3e;
+  --bottom-bg-color: #212529;
+  --bs-body-border-color: #575a5c;
+  --bs-subtitle-border-color: #575a5c;
+  --bs-subtitle-border-color-hover: #898d8e;
 }

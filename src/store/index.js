@@ -7,7 +7,8 @@ export default createStore({
     videoFile: {
       name: null,
       size: null,
-      videoURL: null,
+      url: null,
+      duration: null,
     },
     subtitleFile: [],
   },
@@ -17,40 +18,47 @@ export default createStore({
   mutations: {
     initializeStore(state) {
       if (
-        localStorage.getItem("videoName") &&
-        localStorage.getItem("videoSize") &&
-        localStorage.getItem("videoURL")
+        localStorage.getItem("subtitleFile") &&
+        localStorage.getItem("videoFile")
       ) {
-        state.videoFile.name = localStorage.getItem("videoName");
-        state.videoFile.size = localStorage.getItem("videoSize");
-        state.videoFile.videoURL = localStorage.getItem("videoURL");
+        const subtitleJsonData = localStorage.getItem("subtitleFile");
+        const videoJsonData = localStorage.getItem("videoFile");
+
+        state.subtitleFile = JSON.parse(subtitleJsonData);
+        state.videoFile = JSON.parse(videoJsonData);
       }
     },
 
     setVideoFile(state, payload) {
-      state.videoFile.name = payload.name;
-      state.videoFile.size = payload.size;
-      state.videoFile.videoURL = payload.url;
-      localStorage.setItem("videoName", payload.name);
-      localStorage.setItem("videoSize", payload.size);
-      localStorage.setItem("videoURL", payload.url);
+      state.videoFile = payload;
+      const JSONData = JSON.stringify(payload);
+      localStorage.setItem("videoFile", JSONData);
     },
 
     removeVideoFile(state) {
-      state.videoFile.name = null;
-      state.videoFile.size = null;
-      state.videoFile.videoURL = null;
-      localStorage.removeItem("videoName");
-      localStorage.removeItem("videoSize");
-      localStorage.removeItem("videoURL");
+      state.videoFile = null;
+      localStorage.removeItem("videoFile");
     },
 
     setIsEditorView(state, payload) {
       state.isEditorView = payload;
     },
 
-    saveSubtitleFile(state) {
-      localStorage.setItem("SubtitleFile", state.subtitleFile);
+    readSubtitleFile(state) {
+      if (localStorage.getItem("subtitleFile")) {
+        state.subtitleFile = localStorage.getItem("subtitleFile");
+      }
+    },
+
+    saveSubtitleFile(state, payload) {
+      state.subtitleFile = payload;
+      const JSONData = JSON.stringify(payload);
+      localStorage.setItem("subtitleFile", JSONData);
+    },
+
+    removeSubtitleFile(state) {
+      state.subtitleFile = [];
+      localStorage.removeItem("subtitleFile");
     },
   },
 

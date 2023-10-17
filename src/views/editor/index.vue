@@ -164,13 +164,24 @@
                                 </div>
                                 <div class="second-unit-text">{{ second }}</div>
                             </div>
-                        </div>
-                        <div class="scale-subtitle">
-                            <div class="subtitle-loop" v-for="(cardData, index) in subtitleFile" :key="index"
-                                :style="setSubtitlePostion(cardData)">
-                                <div class="subtitle-text">{{ cardData.subtitle }}</div>
+                            <div class="cst-pointer">
+                                <div class="cst-pointer-triangle"></div>
+                                <div class="cst-pointer-line"></div>
                             </div>
                         </div>
+                        <div class="scale-subtitle">
+
+                            <div class="subtitle-loop" ref="subtitleContainer" v-for="(cardData, index) in subtitleFile"
+                                :key="index" :style="{ left: `${cardData.left}px`, width: `${cardData.width}px` }"
+                                :class="cardData.subtitleId">
+                                <textarea class="subtitle-text" v-model="cardData.subtitle" rows="2"></textarea>
+                                <!-- <div class="right-handle" :style="setRightHandle(cardData)"></div> -->
+                            </div>
+                            <div class="left-handle"></div>
+                            <div class="right-handle"></div>
+
+                        </div>
+
                     </div>
 
                 </div>
@@ -217,33 +228,52 @@ export default {
             },
             scaleSeconds: [],
             viewSecondsSizeOnScale: 100,
-            videoDuration: null,
-
-
+            videoDuration: 0,
+            scaleSubtitleCard: [],
 
         }
     },
 
 
-    created() {
-
-    },
-
     computed: {
-        setSubtitlePostion() {
-            return (cardData) => {
-                const startTime = this.formatTimeNew(cardData.startTimeStamp);
-                const endTime = this.formatTimeNew(cardData.endTimeStamp);
-                const duration = endTime - startTime;
+        // setRightHandle() {
+        //     return (cardData) => {
+        //         const element = document.getElementsByClassName(cardData.subtitleId);
+        //         let parentLeft = 0;
+        //         if (element.length > 0) {
+        //             var parenetElement = element[0];
+        //             const parenetElementCSS = getComputedStyle(parenetElement);
 
-                return {
-                    left: `${20 + (startTime * this.viewSecondsSizeOnScale)}px`,
-                    width: `calc(${duration * this.viewSecondsSizeOnScale}px)`,
-                };
-            }
+        //             parentLeft = parenetElementCSS.left;
+        //         }
+        //         return {
+        //             left: `calc(${parentLeft} - 3px)`,
+        //         };
+        //     }
+        // },
 
+        // setLeftHandle() {
+        //     return (cardData) => {
+        //         const startTime = this.formatTimeToDisplay(cardData.startTimeStamp);
+        //         return {
+        //             left: `${(startTime * this.viewSecondsSizeOnScale) - 3}px`,
+        //         };
+        //     }
+        // },
 
-        },
+        // setSubtitlePostion() {
+        //     return (cardData) => {
+        //         const startTime = this.formatTimeToDisplay(cardData.startTimeStamp);
+        //         const endTime = this.formatTimeToDisplay(cardData.endTimeStamp);
+        //         const duration = endTime - startTime;
+
+        //         return {
+        //             left: `${10 + (startTime * this.viewSecondsSizeOnScale)}px`,
+        //             width: `calc(${duration * this.viewSecondsSizeOnScale}px)`,
+        //             'min-width': `calc(${(duration * this.viewSecondsSizeOnScale).toFixed(2)}px)`,
+        //         };
+        //     }
+
 
         secondUnitStyle() {
             return {
@@ -253,13 +283,16 @@ export default {
     },
 
     methods: {
-        handleSrcoll() {
-            const scaleContainer = this.$refs.scaleContainer;
-            const subtitleLoop = scaleContainer.querySelector('.subtitle-loop');
-            const subtitleLoopStyle = {
-                left: `-${subtitleLoop.offsetLeft}px`
+
+        formatTimeToDisplay(timeString) {
+            if (this.timeFormat == "00:00:00:00") {
+                const [hours, minutes, seconds, milliseconds] = timeString.split(":").map(Number);
+                return hours * 3600 + minutes * 60 + seconds + milliseconds / 100;
+            } else {
+                const [minutes, seconds, milliseconds] = timeString.split(":").map(Number);
+                return minutes * 60 + seconds + milliseconds / 100;
+
             }
-            Object.assign(subtitleLoop.style, subtitleLoopStyle);
         },
 
         applyshorting() {
@@ -323,9 +356,9 @@ export default {
         },
 
         UploadSubtitleFile(event) {
-            const subtitleFile = event.target.files[0];
+            const file = event.target.files[0];
             const allowedExtension = ['srt']
-            const fileExtenstion = subtitleFile.name.split('.').pop().toLowerCase();
+            const fileExtenstion = file.name.split('.').pop().toLowerCase();
 
             if (allowedExtension.includes(fileExtenstion)) {
                 this.selectedSubtitleFile = event.target.files[0];
@@ -338,35 +371,7 @@ export default {
 
         },
 
-        readSubtitleFile() {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const subtitleText = event.target.result;
-                const subtitleEntries = subtitleText.split(/\n\s*\n/);
 
-                this.subtitleFile.splice(0, this.subtitleFile.length);
-
-                subtitleEntries.forEach((entry) => {
-                    const lines = entry.split('\n');
-
-                    if (lines.length >= 3) {
-
-                        const timestamps = lines[1].split(' --> ');
-                        const startTimeStamp = this.formatMilliseconds(timestamps[0]);
-                        const endTimeStamp = this.formatMilliseconds(timestamps[1]);
-                        const subtitleText = lines.slice(2).join('\n');
-
-                        this.subtitleFile.push({
-                            startTimeStamp: startTimeStamp,
-                            endTimeStamp: endTimeStamp,
-                            subtitle: subtitleText,
-                            subtitleId: uuidv4(),
-                        })
-                    }
-                })
-            }
-            reader.readAsText(this.selectedSubtitleFile)
-        },
 
         formatMilliseconds(timestamp) {
 
@@ -423,52 +428,18 @@ export default {
         backToHome() {
             this.$router.push('/')
             this.$store.commit("removeVideoFile")
+            this.$store.commit("removeSubtitleFile")
 
         },
 
-        setTimeFormatAndOtherUnits() {
-            const videoElement = this.$refs.videoPlayer;
-            videoElement.preload = 'metadata';
-
-            videoElement.onloadedmetadata = () => {
-                this.videoDuration = videoElement.duration;
-
-                for (let i = 0; i < (this.videoDuration + 1); i++) {
-                    const minutes = Math.floor(i / 60);
-                    const second = i % 60;
-                    this.scaleSeconds.push(`${String(minutes).padStart(1, '0')}:${String(second).padStart(2, '0')}`)
-                }
-
-                if (this.videoDuration < 3600) {
-                    this.timeFormat = "00:00:00"
-                    this.dataMaskFormat = "99:99:99"
-                }
-                else {
-                    this.timeFormat = "00:00:00:00"
-                    this.dataMaskFormat = "99:99:99:99"
-                }
-
-                if (this.subtitleFile.length === 0) {
-                    if (this.timeFormat === "00:00:00") {
-
-                        this.subtitleFile.push({
-                            startTimeStamp: '00:00:00',
-                            endTimeStamp: '00:02:00',
-                            subtitle: '',
-                            subtitleId: uuidv4(),
-
-                        })
-                    }
-                    else {
-                        this.subtitleFile.push({
-                            startTimeStamp: '00:00:00:00',
-                            endTimeStamp: '00:00:02:00',
-                            subtitle: '',
-                            subtitleId: uuidv4(),
-
-                        })
-                    }
-                }
+        setTimeFormat() {
+            if (this.videoDuration < 3600) {
+                this.timeFormat = "00:00:00"
+                this.dataMaskFormat = "99:99:99"
+            }
+            else {
+                this.timeFormat = "00:00:00:00"
+                this.dataMaskFormat = "99:99:99:99"
             }
         },
 
@@ -557,15 +528,15 @@ export default {
 
                 const [h2, m2, s2, ms2] = time2.split(':').map(Number);
 
-                const totalMilliseconds = (h1 * 3600 * 99 + m1 * 60 * 99 + s1 * 99 + ms1) + (h2 * 3600 * 99 + m2 * 60 * 99 + s2 * 99 + ms2);
+                const totalMilliseconds = (h1 * 3600 * 100 + m1 * 60 * 100 + s1 * 100 + ms1) + (h2 * 3600 * 100 + m2 * 60 * 100 + s2 * 100 + ms2);
 
-                const hours = Math.floor(totalMilliseconds / (3600 * 99));
+                const hours = Math.floor(totalMilliseconds / (3600 * 100));
 
-                const minutes = Math.floor((totalMilliseconds % (3600 * 99)) / (60 * 99));
+                const minutes = Math.floor((totalMilliseconds % (3600 * 100)) / (60 * 100));
 
-                const seconds = Math.floor((totalMilliseconds % (60 * 99) / 99));
+                const seconds = Math.floor((totalMilliseconds % (60 * 100) / 100));
 
-                const millisecond = totalMilliseconds % 99;
+                const millisecond = totalMilliseconds % 100;
 
                 const formattedResult = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(millisecond).padStart(2, "0")}`;
 
@@ -573,42 +544,27 @@ export default {
             }
             else {
 
-                const [h1, m1, s1] = time1.split(':').map(Number);
+                const [m1, s1, ms1] = time1.split(':').map(Number);
 
-                const [h2, m2, s2] = time2.split(':').map(Number);
+                const [m2, s2, ms2] = time2.split(':').map(Number);
 
-                const totalSeconds = (h1 * 3600 + m1 * 60 + s1) + (h2 * 3600 + m2 * 60 + s2);
+                const totalMilliseconds = (m1 * 60 * 100 + s1 * 100 + ms1) + (m2 * 60 * 100 + s2 * 100 + ms2);
 
-                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor(totalMilliseconds / (60 * 100));
 
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = Math.floor((totalMilliseconds % (60 * 100) / 100));
 
-                const seconds = totalSeconds % 60;
+                const millisecond = totalMilliseconds % 100;
 
-                const formattedResult = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                const formattedResult = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(millisecond).padStart(2, "0")}`;
 
                 return formattedResult;
+
             }
 
         },
 
-        addNewCard() {
 
-            const lastSubtitle = this.subtitleFile[this.subtitleFile.length - 1]?.subtitle || '';
-
-            const lastTime = this.subtitleFile[this.subtitleFile.length - 1]?.endTimeStamp || '';
-
-            if (lastSubtitle !== '') {
-
-                this.subtitleFile.push({
-                    startTimeStamp: this.nextCardTime(lastTime, true),
-                    endTimeStamp: this.nextCardTime(lastTime, false, true),
-                    subtitle: '',
-                    subtitleId: uuidv4(),
-
-                })
-            }
-        },
 
         nextCardTime(lastTime, start = false, end = false) {
             if (start) {
@@ -640,23 +596,7 @@ export default {
             }
         },
 
-        addNextCard(currentId) {
 
-            const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
-
-            const lastTime = this.subtitleFile[index]?.endTimeStamp || '';
-
-            if (this.subtitleFile[index]?.subtitle !== '' && this.subtitleFile[index + 1]?.subtitle !== '') {
-
-                this.subtitleFile.splice(index + 1, 0, {
-                    startTimeStamp: this.nextCardTime(lastTime, true),
-                    endTimeStamp: this.nextCardTime(lastTime, false, true),
-                    subtitle: '',
-                    subtitleId: uuidv4(),
-
-                })
-            }
-        },
 
         deleteCurrentCard(currentId) {
 
@@ -679,13 +619,13 @@ export default {
         setFocusIn(cardId) {
             if (this.currentFocusedCardId === null) {
                 this.currentFocusedCardId = cardId
-                this.$store.commit("saveSubtitleFile")
+                this.$store.commit("saveSubtitleFile", this.subtitleFile)
                 this.applyshorting()
             }
         },
 
         saveSubtitles() {
-            this.$store.commit("saveSubtitleFile")
+            this.$store.commit("saveSubtitleFile", this.subtitleFile)
             this.subtitleFile.sort((a, b) => {
                 return this.formatTimeNew(a.startTimeStamp) - this.formatTimeNew(b.startTimeStamp)
             })
@@ -741,15 +681,128 @@ export default {
 
             return srtContent;
         },
+
+        addLeftAndWidth(cardData) {
+            const startTime = this.formatTimeToDisplay(cardData.startTimeStamp);
+            const endTime = this.formatTimeToDisplay(cardData.endTimeStamp);
+            const duration = endTime - startTime;
+            const newObj = {
+                ...cardData,
+                left: 10 + (startTime * this.viewSecondsSizeOnScale),
+                width: (duration * this.viewSecondsSizeOnScale)
+            }
+            return newObj
+        },
+
+        readSubtitleFile() {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const subtitleText = event.target.result;
+                const subtitleEntries = subtitleText.split(/\n\s*\n/);
+
+                this.subtitleFile.splice(0, this.subtitleFile.length);
+
+                subtitleEntries.forEach((entry) => {
+                    const lines = entry.split('\n');
+
+                    if (lines.length >= 3) {
+
+                        const timestamps = lines[1].split(' --> ');
+                        const startTimeStamp = this.formatMilliseconds(timestamps[0]);
+                        const endTimeStamp = this.formatMilliseconds(timestamps[1]);
+                        const subtitleText = lines.slice(2).join('\n');
+                        const cardData = this.addLeftAndWidth({
+                            startTimeStamp: startTimeStamp,
+                            endTimeStamp: endTimeStamp,
+                            subtitle: subtitleText,
+                            subtitleId: uuidv4(),
+                        })
+                        this.$utils.addSubtitle(cardData)
+                    }
+                })
+            }
+            reader.readAsText(this.selectedSubtitleFile)
+        },
+
+        addNewCard() {
+
+            const lastSubtitle = this.subtitleFile[this.subtitleFile.length - 1]?.subtitle || '';
+
+            const lastTime = this.subtitleFile[this.subtitleFile.length - 1]?.endTimeStamp || '';
+
+            if (lastSubtitle !== '') {
+                const cardData = this.addLeftAndWidth({
+                    startTimeStamp: this.nextCardTime(lastTime, true),
+                    endTimeStamp: this.nextCardTime(lastTime, false, true),
+                    subtitle: '',
+                    subtitleId: uuidv4(),
+                })
+
+                this.$utils.addSubtitle(cardData)
+            }
+        },
+
+        // update this method leter on
+        addNextCard(currentId) {
+
+            const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
+
+            const lastTime = this.subtitleFile[index]?.endTimeStamp || '';
+
+            if (this.subtitleFile[index]?.subtitle !== '' && this.subtitleFile[index + 1]?.subtitle !== '') {
+
+                const cardData = this.addLeftAndWidth({
+                    startTimeStamp: this.nextCardTime(lastTime, true),
+                    endTimeStamp: this.nextCardTime(lastTime, false, true),
+                    subtitle: '',
+                    subtitleId: uuidv4(),
+                })
+                this.subtitleFile.splice(index + 1, 0, cardData)
+            }
+            this.$utils.updateFile(this.subtitleFile)
+        },
     },
-    mounted() {
-        // Your mounted hook code here
-        this.videoFileName = this.$store.state.videoFile.name;
-        this.videoFileSize = this.$store.state.videoFile.size;
-        this.videoURL = this.$store.state.videoFile.videoURL;
+
+    created() {
+        const videoFileData = this.$store.state.videoFile;
+        this.videoFileName = videoFileData.name;
+        this.videoFileSize = videoFileData.size;
+        this.videoURL = videoFileData.url;
+        this.videoDuration = videoFileData.duration;
         this.subtitleFileName = `${this.videoFileName.split('.')[0]}.srt`
-        this.setTimeFormatAndOtherUnits();
-        this.subtitleFile = this.$store.state.subtitleFile;
+
+        for (let i = 0; i < (this.videoDuration + 1); i++) {
+            const minutes = Math.floor(i / 60);
+            const second = i % 60;
+            this.scaleSeconds.push(`${String(minutes).padStart(1, '0')}:${String(second).padStart(2, '0')}`)
+        }
+        this.setTimeFormat()
+    },
+
+    mounted() {
+        this.subtitleFile = this.$utils.getSubtitleFile();
+
+        if (this.subtitleFile.length === 0) {
+            if (this.timeFormat === "00:00:00") {
+                const cardData = this.addLeftAndWidth({
+                    startTimeStamp: '00:00:00',
+                    endTimeStamp: '00:02:00',
+                    subtitle: '',
+                    subtitleId: uuidv4(),
+                })
+                this.$utils.addSubtitle(cardData)
+            }
+            else {
+                const cardData = this.addLeftAndWidth({
+                    startTimeStamp: '00:00:00:00',
+                    endTimeStamp: '00:00:02:00',
+                    subtitle: '',
+                    subtitleId: uuidv4(),
+                })
+                this.$utils.addSubtitle(cardData)
+            }
+        }
+
 
         const videoElement = this.$refs.videoPlayer;
 
