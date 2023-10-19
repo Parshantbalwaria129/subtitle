@@ -360,7 +360,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: var(--right-body-text-color);
   margin-left: 10px;
 }
-*/ .scale-container .scale-second-loop {
+.scale-container .scale-second-loop {
   height: 100%;
   width: 100px;
   flex-grow: 0;
