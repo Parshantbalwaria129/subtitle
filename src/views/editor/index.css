@@ -1,5 +1,5 @@
 body {
-  overflow: hidden; /* Hide scrollbars */
+  overflow: hidden;
 }
 
 .main-container {
@@ -127,7 +127,6 @@ body {
   background-color: var(--right-bg-color);
   border: none;
   text-align: center;
-  /* font-size: large; */
 }
 
 .subtitle-time-stamp-container input:hover {
@@ -148,7 +147,6 @@ body {
   resize: none;
   width: 95%;
   height: 90%;
-  /* font-size: large; */
 }
 
 .subtitle-container textarea:hover {
@@ -198,7 +196,6 @@ body {
   align-items: center;
   padding-left: 5px;
   padding-right: 5px;
-  /* flex: 1 1 1; */
 }
 
 .toolbar .left-toolbar {
@@ -256,8 +253,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .right-toolbar .dropdown .dropdown-toggle {
-  /* background-color: var(--right-bg-color); */
-  /* color: var(--right-body-text-color); */
   font-size: smaller;
 }
 .right-toolbar .dropdown .dropdown-menu {
@@ -320,7 +315,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .add-subtitle label,
 .download-subtitle label,
 .save-subtitle label {
-  /* transition: all ease-in 0.1ms; */
+  transition: all ease-in 0.1ms;
   cursor: pointer;
 }
 
@@ -336,26 +331,23 @@ input[type="range"]::-webkit-slider-thumb:hover {
   border-radius: 10px;
   color: var(--right-body-text-color);
   overflow-y: auto;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 ::-webkit-scrollbar {
   width: 5px !important;
   height: 7px !important;
   padding-bottom: 10px;
-  /* display: none; */
 }
 
-/* Customize the scrollbar thumb (the draggable part) */
 ::-webkit-scrollbar-thumb {
-  background-color: #555; /* Background color */
-  border-radius: 5px; /* Rounded corners */
+  background-color: #555;
+  border-radius: 5px;
 }
 
-/* Customize the scrollbar track */
 ::-webkit-scrollbar-track {
-  background: #383636; /* Track background color */
+  background: #383636;
 }
 
 .main-scale .scale-container .scale {
@@ -464,10 +456,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
   border-right: 5px solid transparent;
   border-top: 6px solid var(--right-body-text-color);
 }
-
-/* .scale-subtitle .cst-pointer .cst-pointer-traingle:hover {
-  border-right: 10px solid var(--bs-subtitle-border-color-hover);
-} */
 
 .cst-pointer .cst-pointer-line {
   position: absolute;
