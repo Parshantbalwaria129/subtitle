@@ -20,23 +20,10 @@ const routes = [
     path: "/editor",
     name: "EditorView",
     component: EditorView,
-    // props: (route) => ({
-    //   //   fileName: route.query.videoFile,
-    //   //   fileSize: route.query.vidoeSize,
-    //   fileURL: route.query.videoURL,
-    // }),
-    // alias: "/editorr",
   },
-  // {
-  //   path: "/editor/:selectedVideoFile",
-  //   name: "EditorView",
-  //   component: EditorView,
-  //   props: true,
-  // },
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
   routes,
 });
 
