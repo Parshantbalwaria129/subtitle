@@ -42,11 +42,11 @@ export default {
 
     data() {
         return {
-            isFocused: false
+            // isFocused: false
         }
     },
 
-    props: ['index', 'cardData', 'timeFormat', 'dataMaskFormat'],
+    props: ['index', 'cardData', 'currentFocusedCardId'],
 
     mounted() {
         document.addEventListener('click', this.handleClickOutside);
@@ -56,6 +56,9 @@ export default {
     },
 
     computed: {
+        isFocused() {
+            return this.cardData.subtitleId === this.currentFocusedCardId
+        },
 
         startTimeStamp: {
 
@@ -112,12 +115,12 @@ export default {
         setFocusIn() {
             this.$emit('setFocusIn', this.cardData.subtitleId)
 
-            this.isFocused = true
+            // this.isFocused = true
 
         },
 
         setFocusOut() {
-            this.isFocused = false
+            // this.isFocused = false
             this.$emit('setFocusOut', this.cardData.subtitleId)
         },
 

@@ -40,7 +40,7 @@
                     <div class="video-container">
                         <div class="ratio ratio-16x9">
                             <video ref="videoPlayer" class="video-player" preload="metadata" :src="this.videoURL" autoplay
-                                controls></video>
+                                loop controls controlslist="nodownload nofullscreen"></video>
                         </div>
 
                         <div class="subtitle-display" v-if="subtitleAvailable">
@@ -112,7 +112,10 @@
                         </div>
                     </div>
 
-                    <div class="center-toolbar"></div>
+                    <div class="center-toolbar">
+                        <input type="range" class="form-range" min="50" max="150" step="10" v-model="changeViewScaleSize"
+                            id="customRange">
+                    </div>
 
                     <div class="right-toolbar">
                         <div class="save-subtitle">
@@ -185,8 +188,14 @@
                             <div v-drag="{ axis: 'x' }" class="right-handle" :style="{ left: computeRightHandle }"
                                 @v-drag-moving="rightDragMoving" @v-drag-start="rightDragStart" @v-drag-end="rightDragEnd">
                             </div>
-                            <!-- <div class="temp-handle" v-if="tempHandle" :style="{ left: `${tempHandleLeft}px` }">
+                            <!-- <div v-drag="{ axis: 'x' }" v-if="isFocused" class="left-handle"
+                                style="{left: computeLeftHandle}" @v-drag-moving="leftDragMoving"
+                                @v-drag-start="leftDragStart" @v-drag-end="leftDragEnd">
+                            </div>
 
+                            <div v-drag="{ axis: 'x' }" v-if="isFocused" class="right-handle"
+                                style="{left: computeRightHandle}" @v-drag-moving="rightDragMoving"
+                                @v-drag-start="rightDragStart" @v-drag-end="rightDragEnd">
                             </div> -->
                         </div>
                     </div>
@@ -194,13 +203,16 @@
             </div>
         </div>
     </div>
-    <!-- </div> -->
 </template>
 
 <script>
 import "./index.css";
 import SubtitleCard from "@/components/subtitleCard/index.vue";
-import { v4 as uuidv4 } from "uuid";
+// import RangeSlider from 'vue-range-slider'
+import 'vue-range-slider/dist/vue-range-slider.css'
+import {
+    v4 as uuidv4
+} from "uuid";
 
 export default {
     name: "EditorView",
@@ -218,7 +230,7 @@ export default {
             currentSubtitle: "",
             subtitleAvailable: false,
             currentFocusedCardId: null,
-            isFocused: false,
+            isFocused: true,
             selectedSubtitleFile: null,
             subtitleFileName: "",
             sortBy: {
@@ -233,61 +245,83 @@ export default {
             endTimeNewLeft: null,
             leftHandleVisible: false,
             rightHandleVisible: false,
-            tempHandle: false,
-            tempHandleLeft: null,
+            sliderValue: 100,
+            leftHandleDown: false,
+            rightHandleDown: false,
         };
     },
 
     computed: {
-        // leftHandleVisible() {
-        //     return !this.tempHandle;
-        // },
-
-        // rightHandleVisible() {
-        //     return !this.tempHandle;
-        // },
-
         computeLeftHandle() {
-            // if (!this.tempHandle) {
-            //     if (this.currentFocusedCardId === null) {
-            //         return "0px";
-            //     } else {
-            //         const cardData = this.subtitleFile.find(
-            //             (card) => card.subtitleId === this.currentFocusedCardId
-            //         );
+            console.log("computeLeftHandle")
+            try {
+                console.log("this.computeLeftHandle")
+                // console.log(this.subtitleFile)
+                // console.log(this.currentFocusedCardId)
 
-            //         return `${cardData.left - 3}px`;
-            //     }
-            // } else {
-            //     return "0px";
-            // }
-
-            if (this.currentFocusedCardId === null) {
-                return "0px";
-            } else {
                 const cardData = this.subtitleFile.find(
                     (card) => card.subtitleId === this.currentFocusedCardId
                 );
-
-                return `${cardData.left - 3}px`;
+                if (this.leftHandleDown) {
+                    return '0px'
+                }
+                // else {
+                return `${cardData.left - 3}px`
+                // }
+                // } catch (error) {
+                //     console.log(error)
+                // }
+            } catch {
+                // console.log(error)
             }
-
 
         },
 
         computeRightHandle() {
-
-            if (this.currentFocusedCardId === null) {
-                return "0px";
-            } else {
+            console.log("computeRightHandle")
+            try {
                 const cardData = this.subtitleFile.find(
                     (card) => card.subtitleId === this.currentFocusedCardId
                 );
-                return `${cardData.left + cardData.width - 3}px`;
+
+                if (this.rightHandleDown) {
+                    console.log('if')
+                    return '0px'
+                }
+                else {
+                    console.log('else')
+                    console.log(' left:', `${cardData.left + cardData.width - 3}px`)
+                    console.log("::", document.querySelector(".right-handle").style.left)
+                    return `${cardData.left + cardData.width - 3}px`
+                }
+            } catch {
+                // console.log(error)
             }
+
+
+        },
+
+        changeViewScaleSize: {
+            get() {
+                console.log('changeViewScaleSize.get')
+
+                return this.viewSecondsSizeOnScale
+            },
+            set(value) {
+                console.log('changeViewScaleSize.set')
+
+                this.viewSecondsSizeOnScale = parseInt(value)
+                this.subtitleFile.forEach((cardData) => {
+                    const result = this.updateLeftAndWidth(cardData.startTimeStamp, cardData.endTimeStamp)
+                    cardData.left = result.left
+                    cardData.width = result.width
+                })
+                this.$utils.updateFile(this.subtitleFile)
+            },
         },
 
         checkFocus() {
+            console.log("checkFocus")
             return (id) => {
                 if (this.currentFocusedCardId === null) {
                     return false;
@@ -300,56 +334,30 @@ export default {
         },
 
         secondUnitStyle() {
+            console.log("secondUnitStyle")
             return {
-                width: `calc(${this.viewSecondsSizeOnScale}%)`,
+                width: `${this.viewSecondsSizeOnScale}px`,
             };
         },
     },
 
     methods: {
-        leftDragEnd() {
-            // this.$utils.saveSubtitles(this.subtitleFile)
-            this.tempHandle = false
+
+        setCstPointer(value) {
+            console.log("setCstPointer")
+
+            const cstTriangle = document.querySelector(".cst-pointer-triangle");
+            const cstLine = document.querySelector(".cst-pointer-line");
+            cstTriangle.style.left = `${value - 4}px`;
+            cstLine.style.left = `${value}px`;
         },
 
-        rightDragEnd() {
-            this.tempHandle = false
-
-        },
-
-        leftDragStart(event) {
-            // this.tempHandle = true
-            // const cardData = this.subtitleFile.find(
-            //     (card) => card.subtitleId === this.currentFocusedCardId
-            // );
-            // this.tempHandleLeft = cardData.left - 3;
+        leftDragStart() {
+            console.log("leftDragStart")
             try {
-                event.srcElement
+                this.leftHandleDown = true
             } catch (error) {
                 console.log(error)
-            }
-        },
-
-        rightDragStart() {
-            this.tempHandle = true
-
-        },
-
-        rightDragMoving(event) {
-            try {
-                const transformMatrix = window.getComputedStyle(
-                    event.srcElement
-                ).transform;
-                const matrixValues = transformMatrix.split(",");
-                const rightHandleNewLeft = parseInt(matrixValues[4]);
-                const newEndTimeStamp = this.pixelToTimeStamp(rightHandleNewLeft);
-                const cardData = this.subtitleFile.find(
-                    (card) => card.subtitleId === this.currentFocusedCardId
-                );
-                cardData.endTimeStamp = newEndTimeStamp;
-                // cardData.width = rightHandleNewLeft - cardData.left + 3;
-            } catch (error) {
-                console.log(error);
             }
         },
 
@@ -365,16 +373,92 @@ export default {
                     (card) => card.subtitleId === this.currentFocusedCardId
                 );
                 cardData.startTimeStamp = newStartTimeStamp;
-                console.log(cardData.left, "::", newLeft);
                 const changeInValue = cardData.left - newLeft;
                 cardData.left = newLeft;
                 cardData.width = cardData.width + changeInValue;
-                this.tempHandleLeft = newLeft - 3;
+                this.setCstPointer(cardData.left - 7)
+
             } catch (error) {
                 console.log(error);
             }
         },
 
+        leftDragEnd() {
+            try {
+                this.leftHandleDown = false
+                this.$utils.updateFile(this.subtitleFile)
+            } catch {
+                // ..
+            }
+
+
+        },
+
+        rightDragStart() {
+            try {
+                this.rightHandleDown = true
+
+            } catch (error) {
+                console.log(error)
+            }
+        },
+
+        rightDragMoving(event) {
+            try {
+                const transformMatrix = window.getComputedStyle(
+                    event.srcElement
+                ).transform;
+                const matrixValues = transformMatrix.split(",");
+                const rightHandleNewLeft = parseInt(matrixValues[4]);
+                const videoElement = this.$refs.videoPlayer;
+                const newTimestamp = this.pixelToTime(rightHandleNewLeft);
+                // const newFrameIndex = Math.floor(newTimestamp * videoElement.playbackRate * 1000);
+                videoElement.currentTime = newTimestamp
+                const newEndTimeStamp = this.pixelToTimeStamp(rightHandleNewLeft);
+                const cardData = this.subtitleFile.find(
+                    (card) => card.subtitleId === this.currentFocusedCardId
+                );
+                cardData.endTimeStamp = newEndTimeStamp;
+                cardData.width = rightHandleNewLeft - cardData.left + 3;
+                this.setCstPointer(cardData.left + cardData.width - 9)
+
+
+                // const updateVideoTime = () => {
+                //     const frameIndex = Math.floor(videoElement.currentTime * videoElement.playbackRate * 1000);
+                //     if (frameIndex < newFrameIndex) {
+                //         requestAnimationFrame(updateVideoTime);
+                //     } else {
+                //         // Stop updating once we reach the desired frame index
+                //         videoElement.pause();
+                //     }
+                // };
+                // requestAnimationFrame(updateVideoTime);
+            } catch (error) {
+                console.log(error);
+            }
+        },
+
+        rightDragEnd() {
+            this.rightHandleDown = false
+            this.$utils.updateFile(this.subtitleFile)
+
+        },
+
+        setHandleStyle() {
+            try {
+                if (this.currentFocusedCardId !== null) {
+                    const leftHandle = document.querySelector(".left-handle");
+                    const rightHandle = document.querySelector(".right-handle");
+                    const cardData = this.subtitleFile.find(
+                        (card) => card.subtitleId === this.currentFocusedCardId
+                    );
+                    leftHandle.style.left = `${cardData.left - 3}px`;
+                    rightHandle.style.left = `${cardData.left + cardData.width - 3}px`;
+                }
+            } catch {
+                // ...
+            }
+        },
 
         applyshorting() {
             if (this.sortBy.field === "start" && this.sortBy.order === "asc") {
@@ -464,7 +548,6 @@ export default {
 
         // Playing with time units
         // ===============================================================
-
         timeUnitToTimeStamp(timeUnit) {
             try {
                 const parts = timeUnit.toString().split(/\.|,/);
@@ -612,15 +695,9 @@ export default {
                 width: result.width,
             };
             this.$utils.updateSubtitle(cardData, currentId);
-            // this.subtitleFile = this.$utils.getSubtitleFile()
         },
 
         updateEndTimestamp(value, currentId) {
-            // const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
-
-            // this.subtitleFile[index].endTimeStamp = value;
-
-            // this.$utils.updateFile(this.subtitleFile)
             const result = this.updateLeftAndWidth(
                 this.subtitleFile.find((card) => card.subtitleId === currentId)
                     .startTimeStamp,
@@ -759,14 +836,7 @@ export default {
             // const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
         },
 
-        focusOut() {
-            return (cardId) => {
-                this.setFocusOut(cardId);
-            };
-        },
-
         setFocusOut(cardId) {
-            console.log("OUT: ", cardId);
             this.isFocused = false;
             if (cardId !== this.currentFocusedCardId) {
                 this.currentFocusedCardId = null;
@@ -775,24 +845,20 @@ export default {
             }
         },
 
-        focusIn() {
-            return (e, cardId) => {
-                console.log(e);
-                this.setFocusIn(cardId);
-            };
-        },
-
         setFocusIn(cardId) {
-            console.log("IN: ", cardId);
-
             if (this.currentFocusedCardId === null) {
+                this.isFocused = true;
                 this.$utils.updateFile(this.subtitleFile);
                 this.currentFocusedCardId = cardId;
-                this.isFocused = true;
+                console.log("InFocusNULL::", document.querySelector(".right-handle").style.left)
+
                 this.applyshorting();
+
             } else {
-                this.currentFocusedCardId = cardId;
                 this.isFocused = true;
+                this.currentFocusedCardId = cardId;
+                console.log("InFocus::", document.querySelector(".right-handle").style)
+
             }
         },
 
@@ -895,21 +961,17 @@ export default {
                             const totoalCount = dotCount + commaCount + colonCount;
                             if ((this.videoDuration < 3600) && (totoalCount === 2)) {
                                 timestamps[0] = this.replaceDotAndComma(timestamps[0]);
-                            }
-                            else if ((this.videoDuration >= 3600) && (totoalCount === 3)) {
+                            } else if ((this.videoDuration >= 3600) && (totoalCount === 3)) {
                                 timestamps[0] = this.replaceDotAndComma(timestamps[0]);
-                            }
-                            else {
+                            } else {
                                 alert("Invalid file formate. Please enter a valid file.");
                                 return;
                             }
                             if ((this.videoDuration < 3600) && (totoalCount === 2)) {
                                 timestamps[1] = this.replaceDotAndComma(timestamps[1]);
-                            }
-                            else if ((this.videoDuration >= 3600) && (totoalCount === 3)) {
+                            } else if ((this.videoDuration >= 3600) && (totoalCount === 3)) {
                                 timestamps[1] = this.replaceDotAndComma(timestamps[1]);
-                            }
-                            else {
+                            } else {
                                 alert("Invalid file formate. Please enter a valid file.");
                                 return;
                             }
@@ -952,7 +1014,7 @@ export default {
             }
         },
 
-        // update this method leter on
+        // Need to update this method
         addNextCard(currentId) {
             const index = this.subtitleFile.findIndex(
                 (card) => card.subtitleId === currentId
@@ -1016,7 +1078,8 @@ export default {
                 this.$utils.addSubtitle(cardData);
             }
         }
-
+        this.setFocusIn(this.subtitleFile[0].subtitleId)
+        this.setCstPointer(0)
         const videoElement = this.$refs.videoPlayer;
 
         videoElement.addEventListener("timeupdate", () => {
