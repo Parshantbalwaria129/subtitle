@@ -293,14 +293,9 @@ export default {
 
         changeViewScaleSize: {
             get() {
-                console.log('IN: changeViewScaleSize.get')
-                console.log('OUT: changeViewScaleSize.get')
-
                 return this.viewSecondsSizeOnScale
             },
             set(value) {
-                console.log('IN: changeViewScaleSize.set')
-
                 this.viewSecondsSizeOnScale = parseInt(value)
                 this.subtitleFile.forEach((cardData) => {
                     const result = this.updateLeftAndWidth(cardData.startTimeStamp, cardData.endTimeStamp)
@@ -308,8 +303,6 @@ export default {
                     cardData.width = result.width
                 })
                 this.$utils.updateFile(this.subtitleFile)
-
-                console.log('OUT: changeViewScaleSize.set')
             },
         },
 
@@ -318,12 +311,12 @@ export default {
 
                 if (this.currentFocusedCardId === null) {
                     return false;
-                } 
-                
+                }
+
                 else if (this.currentFocusedCardId === id) {
                     return true;
-                } 
-                
+                }
+
                 else {
                     return false;
                 }
@@ -361,6 +354,10 @@ export default {
                 ).transform;
                 const matrixValues = transformMatrix.split(",");
                 const newLeft = parseInt(matrixValues[4]);
+                const videoElement = this.$refs.videoPlayer;
+                const newTimestamp = this.pixelToTime(newLeft);
+                videoElement.currentTime = newTimestamp;
+                videoElement.play();
                 const newStartTimeStamp = this.pixelToTimeStamp(newLeft);
                 const cardData = this.subtitleFile.find(
                     (card) => card.subtitleId === this.currentFocusedCardId
@@ -371,7 +368,7 @@ export default {
                 cardData.width = cardData.width + changeInValue;
                 this.setCstPointer(cardData.left - 7)
 
-            } catch  {
+            } catch {
                 // ..
             }
         },
@@ -405,7 +402,8 @@ export default {
                 const rightHandleNewLeft = parseInt(matrixValues[4]);
                 const videoElement = this.$refs.videoPlayer;
                 const newTimestamp = this.pixelToTime(rightHandleNewLeft);
-                videoElement.currentTime = newTimestamp
+                videoElement.currentTime = newTimestamp;
+                videoElement.play();
                 const newEndTimeStamp = this.pixelToTimeStamp(rightHandleNewLeft);
                 const cardData = this.subtitleFile.find(
                     (card) => card.subtitleId === this.currentFocusedCardId
@@ -730,7 +728,7 @@ export default {
                 ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(
                     millisecond
                 ).padStart(3, "0")}`;
-                
+
                 return formattedResult;
             } else {
                 const [m1, s1, ms1] = time1.split(":").map(Number);
@@ -1038,11 +1036,11 @@ export default {
         this.subtitleFile = this.$utils.getSubtitleFile();
 
         this.viewSecondsSizeOnScale = parseInt(this.viewSecondsSizeOnScale)
-                this.subtitleFile.forEach((cardData) => {
-                    const result = this.updateLeftAndWidth(cardData.startTimeStamp, cardData.endTimeStamp)
-                    cardData.left = result.left
-                    cardData.width = result.width
-                })
+        this.subtitleFile.forEach((cardData) => {
+            const result = this.updateLeftAndWidth(cardData.startTimeStamp, cardData.endTimeStamp)
+            cardData.left = result.left
+            cardData.width = result.width
+        })
 
         if (this.subtitleFile.length === 0) {
             if (this.timeFormat === "00:00:000") {
