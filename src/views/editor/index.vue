@@ -253,9 +253,12 @@ export default {
 
     computed: {
         computeLeftHandle() {
-            console.log("computeLeftHandle")
+            console.log("IN: computeLeftHandle")
+
             try {
-                console.log("this.computeLeftHandle")
+
+                console.log("IN: TRY: computeLeftHandle")
+                // console.log("this.computeLeftHandle")
                 // console.log(this.subtitleFile)
                 // console.log(this.currentFocusedCardId)
 
@@ -263,52 +266,71 @@ export default {
                     (card) => card.subtitleId === this.currentFocusedCardId
                 );
                 if (this.leftHandleDown) {
+                console.log("IN: TRY: IF: computeLeftHandle")
+                console.log("IN: TRY: IF: OUT: computeLeftHandle")
+
                     return '0px'
                 }
                 // else {
+                console.log("IN: TRY: OUT: computeLeftHandle")
+
+                    console.log("cardLeft:",cardData.left - 3)
                 return `${cardData.left - 3}px`
                 // }
-                // } catch (error) {
-                //     console.log(error)
-                // }
-            } catch {
-                // console.log(error)
-            }
+                } catch (error) {
+                console.log("IN: CATCH: computeLeftHandle")
+
+                    console.log(error)
+                }
+            // } catch {
+            //     console.log(error)
+            // }
+            console.log("OUT: computeLeftHandle")
+
+            return '0px'
 
         },
 
         computeRightHandle() {
-            console.log("computeRightHandle")
+            console.log("IN: computeRightHandle")
             try {
+
+                console.log("IN: TRY: computeRightHandle")
                 const cardData = this.subtitleFile.find(
                     (card) => card.subtitleId === this.currentFocusedCardId
                 );
 
                 if (this.rightHandleDown) {
-                    console.log('if')
+                    console.log("IN: TRY: IF: OUT: computeRightHandle")
                     return '0px'
                 }
                 else {
-                    console.log('else')
-                    console.log(' left:', `${cardData.left + cardData.width - 3}px`)
-                    console.log("::", document.querySelector(".right-handle").style.left)
+                    // console.log('else')
+                    // console.log(' left:', `${cardData.left + cardData.width - 3}px`)
+                    // console.log("::", document.querySelector(".right-handle").style.left)
+                    console.log("IN: TRY: OUT: computeRightHandle")
+
                     return `${cardData.left + cardData.width - 3}px`
                 }
             } catch {
                 // console.log(error)
             }
+            console.log("OUT: computeRightHandle")
+
+            return '0px'
 
 
         },
 
         changeViewScaleSize: {
             get() {
-                console.log('changeViewScaleSize.get')
+                console.log('IN: changeViewScaleSize.get')
+                console.log('OUT: changeViewScaleSize.get')
 
                 return this.viewSecondsSizeOnScale
             },
             set(value) {
-                console.log('changeViewScaleSize.set')
+                console.log('IN: changeViewScaleSize.set')
 
                 this.viewSecondsSizeOnScale = parseInt(value)
                 this.subtitleFile.forEach((cardData) => {
@@ -317,11 +339,13 @@ export default {
                     cardData.width = result.width
                 })
                 this.$utils.updateFile(this.subtitleFile)
+
+                console.log('OUT: changeViewScaleSize.set')
             },
         },
 
         checkFocus() {
-            console.log("checkFocus")
+            console.log("IN-OUT: checkFocus")
             return (id) => {
                 if (this.currentFocusedCardId === null) {
                     return false;
@@ -334,7 +358,7 @@ export default {
         },
 
         secondUnitStyle() {
-            console.log("secondUnitStyle")
+            console.log("IN-OUT: secondUnitStyle")
             return {
                 width: `${this.viewSecondsSizeOnScale}px`,
             };
@@ -344,25 +368,30 @@ export default {
     methods: {
 
         setCstPointer(value) {
-            console.log("setCstPointer")
+            console.log("IN: setCstPointer")
 
             const cstTriangle = document.querySelector(".cst-pointer-triangle");
             const cstLine = document.querySelector(".cst-pointer-line");
             cstTriangle.style.left = `${value - 4}px`;
             cstLine.style.left = `${value}px`;
+        
+            console.log("OUT: setCstPointer")
         },
 
         leftDragStart() {
-            console.log("leftDragStart")
+            console.log("IN: leftDragStart")
             try {
                 this.leftHandleDown = true
             } catch (error) {
                 console.log(error)
             }
+            console.log("OUT: leftDragStart")
         },
 
         leftDragMoving(event) {
+            console.log("IN: leftDragMoving")
             try {
+            console.log("IN: TRY: leftDragMoving")
                 const transformMatrix = window.getComputedStyle(
                     event.srcElement
                 ).transform;
@@ -379,32 +408,47 @@ export default {
                 this.setCstPointer(cardData.left - 7)
 
             } catch (error) {
+            console.log("IN: CATCH: leftDragMoving")
                 console.log(error);
             }
+            console.log("OUT: leftDragMoving")
         },
 
         leftDragEnd() {
+            console.log("IN: leftDragEnd")
+            const element = document.querySelector(".left-handle")
+            element.style.left = `${this.computeLeftHandle}`
             try {
+                console.log("IN: TRY: leftDragEnd")
                 this.leftHandleDown = false
                 this.$utils.updateFile(this.subtitleFile)
             } catch {
                 // ..
+                console.log("IN: CATHC: leftDragEnd")
             }
 
+            console.log("OUT: leftDragEnd")
 
         },
 
         rightDragStart() {
+            console.log("IN: rightDragStart")
             try {
+            console.log("IN: TRY: rightDragStart")
                 this.rightHandleDown = true
 
             } catch (error) {
+                console.log("IN: CATHC: rightDragStart")
                 console.log(error)
             }
+            console.log("OUT: rightDragStart")
         },
 
         rightDragMoving(event) {
+            console.log("IN: rightDragMoving")
             try {
+            console.log("IN: TRY: rightDragMoving")
+
                 const transformMatrix = window.getComputedStyle(
                     event.srcElement
                 ).transform;
@@ -434,18 +478,26 @@ export default {
                 // };
                 // requestAnimationFrame(updateVideoTime);
             } catch (error) {
+                console.log("IN: CATCH: rightDragMoving")
                 console.log(error);
             }
+            console.log("OUT: rightDragMoving")
         },
 
         rightDragEnd() {
+            console.log("IN: rightDragEnd")
+            const element = document.querySelector(".right-handle")
+            element.style.left = `${this.computeRightHandle}`
             this.rightHandleDown = false
             this.$utils.updateFile(this.subtitleFile)
+            console.log("OUT: rightDragEnd")
 
         },
 
         setHandleStyle() {
+            console.log("IN: setHandleStyle")
             try {
+            console.log("IN: TCY: setHandleStyle")
                 if (this.currentFocusedCardId !== null) {
                     const leftHandle = document.querySelector(".left-handle");
                     const rightHandle = document.querySelector(".right-handle");
@@ -456,11 +508,15 @@ export default {
                     rightHandle.style.left = `${cardData.left + cardData.width - 3}px`;
                 }
             } catch {
+            console.log("IN: CATCH: setHandleStyle")
                 // ...
             }
+            console.log("OUT: setHandleStyle")
+
         },
 
         applyshorting() {
+            console.log("IN: applyshorting")
             if (this.sortBy.field === "start" && this.sortBy.order === "asc") {
                 this.subtitleFile.sort((a, b) => {
                     return (
@@ -498,9 +554,11 @@ export default {
                     return b.subtitle.length - a.subtitle.length;
                 });
             }
+            console.log("OUT: applyshorting")
         },
 
         sortByClick(key) {
+            console.log("IN: sortByClick")
             if (key === "start" && this.sortBy.field === "start") {
                 if (this.sortBy.order === "asc") {
                     this.sortBy.order = "dsc";
@@ -530,9 +588,11 @@ export default {
                 this.sortBy.order = "asc";
             }
             this.applyshorting();
+            console.log("OUT: sortByClick")
         },
 
         UploadSubtitleFile(event) {
+            console.log("IN: UploadSubtitleFile")
             const file = event.target.files[0];
             const allowedExtension = ["srt"];
             const fileExtenstion = file.name.split(".").pop().toLowerCase();
@@ -544,12 +604,15 @@ export default {
             } else {
                 alert("Invalid file formate. Please enter a valid file.");
             }
+            console.log("OUT: UploadSubtitleFile")
         },
 
         // Playing with time units
         // ===============================================================
         timeUnitToTimeStamp(timeUnit) {
+            console.log("IN: timeUnitToTimeStamp")
             try {
+            console.log("IN: TRY: timeUnitToTimeStamp")
                 const parts = timeUnit.toString().split(/\.|,/);
                 let milliseconds = parts[1] || "000";
                 milliseconds = milliseconds.padEnd(3, "0").substring(0, 3);
@@ -574,17 +637,24 @@ export default {
                     return formattedTimestamp;
                 }
             } catch (error) {
+            console.log("IN: CATCH: timeUnitToTimeStamp")
                 console.log(error);
             }
+            console.log("OUT: timeUnitToTimeStamp")
         },
 
         timeStampToTimeUnit(timeString) {
+            console.log("IN: timeStampToTimeUnit")
             if (this.timeFormat == "00:00:00:000") {
                 const [hours, minutes, seconds, milliseconds] = timeString
                     .split(":")
                     .map(Number);
+            console.log("IN: IF: OUT timeStampToTimeUnit")
+
                 return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
             } else {
+            console.log("IN: ELSE: OUT timeStampToTimeUnit")
+
                 const [minutes, seconds, milliseconds] = timeString
                     .split(":")
                     .map(Number);
@@ -593,34 +663,51 @@ export default {
         },
 
         replaceDotAndComma(timestamp) {
+            console.log("IN: replaceDotAndComma")
             try {
+                console.log("IN: TRY: replaceDotAndComma")
 
                 const temp = timestamp.replace(".", ":");
                 const newTimestamp = temp.replace(",", ":");
 
                 if (this.timeFormat === "00:00:00:000") {
+            console.log("IN: TRY: IF: OUT: replaceDotAndComma")
+
                     return newTimestamp.substring(0, 12);
                 } else {
+            console.log("IN: TRY: ELSE: OUT: replaceDotAndComma")
+
                     return newTimestamp.substring(0, 9);
                 }
             } catch (error) {
+            console.log("IN: CATCH: replaceDotAndComma")
+
                 console.log(error);
             }
+            console.log("OUT: replaceDotAndComma")
+
         },
 
         pixelToTime(pixel) {
+            console.log("IN: pixelToTime")
             const timeUnit = (pixel - 10) / this.viewSecondsSizeOnScale;
+            console.log("OUT: pixelToTime")
+
             return timeUnit;
         },
 
         pixelToTimeStamp(pixel) {
+            console.log("IN: pixelToTimeStamp")
             const timeUnit = this.pixelToTime(pixel);
+            console.log("OUT: pixelToTimeStamp")
+
             return this.timeUnitToTimeStamp(timeUnit);
         },
 
         // ===============================================================
 
         getVideoDuration() {
+            console.log("IN-OUT:getVideoDuration")
             return new Promise((resolve, reject) => {
                 const videoElement = document.createElement("video");
                 videoElement.preload = "metadata";
@@ -647,12 +734,15 @@ export default {
         },
 
         backToHome() {
+            console.log("IN: backToHome")
             this.$router.push("/");
             this.$store.commit("removeVideoFile");
             this.$store.commit("removeSubtitleFile");
+            console.log("OUT: backToHome")
         },
 
         setTimeFormat() {
+            console.log("IN: setTimeFormat")
             if (this.videoDuration < 3600) {
                 this.timeFormat = "00:00:000";
                 this.dataMaskFormat = "99:99:999";
@@ -660,9 +750,11 @@ export default {
                 this.timeFormat = "00:00:00:000";
                 this.dataMaskFormat = "99:99:99:999";
             }
+            console.log("OUT: setTimeFormat")
         },
 
         displaySubtitle(currentTime) {
+            console.log("IN: displaySubtitle")
             this.currentSubtitle = "";
 
             for (let i = 0; i < this.subtitleFile.length; i++) {
@@ -676,13 +768,16 @@ export default {
                 }
             }
             if (this.subtitleAvailable === true) {
+                console.log("OUT: displaySubtitle")
                 return null;
             }
             this.subtitleAvailable = false;
+            console.log("OUT: displaySubtitle")
             return (this.currentSubtitle = "");
         },
 
         updateStartTimestamp(value, currentId) {
+            console.log("IN: updateStartTimestamp")
             const result = this.updateLeftAndWidth(
                 value,
                 this.subtitleFile.find((card) => card.subtitleId === currentId)
@@ -695,9 +790,11 @@ export default {
                 width: result.width,
             };
             this.$utils.updateSubtitle(cardData, currentId);
+            console.log("OUT: updateStartTimestamp")
         },
 
         updateEndTimestamp(value, currentId) {
+            console.log("IN: updateEndTimestamp")
             const result = this.updateLeftAndWidth(
                 this.subtitleFile.find((card) => card.subtitleId === currentId)
                     .startTimeStamp,
@@ -709,10 +806,12 @@ export default {
                 left: result.left,
                 width: result.width,
             };
+            console.log("OUT: updateEndTimestamp")
             this.$utils.updateSubtitle(cardData, currentId);
         },
 
         updateSubtitle(value, currentId) {
+            console.log("IN: updateSubtitle")
             const index = this.subtitleFile.findIndex(
                 (card) => card.subtitleId === currentId
             );
@@ -720,9 +819,11 @@ export default {
             this.subtitleFile[index].subtitle = value;
 
             this.$utils.updateFile(this.subtitleFile);
+            console.log("OUT: updateSubtitle")
         },
 
         addTime(time1, time2) {
+            console.log("IN: addTime")
             if (this.timeFormat === "00:00:00:000") {
                 const [h1, m1, s1, ms1] = time1.split(":").map(Number);
 
@@ -750,6 +851,7 @@ export default {
                 ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(
                     millisecond
                 ).padStart(3, "0")}`;
+                console.log("IN: IF: OUT: addTime")
 
                 return formattedResult;
             } else {
@@ -769,30 +871,41 @@ export default {
                 const formattedResult = `${String(minutes).padStart(2, "0")}:${String(
                     seconds
                 ).padStart(2, "0")}:${String(millisecond).padStart(3, "0")}`;
+                console.log("IN: ELSE: OUT: addTime")
 
                 return formattedResult;
             }
         },
 
         nextCardTime(lastTime, start = false, end = false) {
+            console.log("IN: nextCardTime")
             if (start) {
                 if (this.timeFormat === "00:00:00:000") {
+            console.log("IN: IF(START): IF: OUT: nextCardTime")
+
                     return this.addTime(lastTime, "00:00:00:200");
                 } else {
+            console.log("IN: IF(START): ELSE: OUT: nextCardTime")
+
                     return this.addTime(lastTime, "00:00:200");
                 }
             }
 
             if (end) {
                 if (this.timeFormat === "00:00:00:000") {
+            console.log("IN: IF(END): IF: OUT: nextCardTime")
+
                     return this.addTime(lastTime, "00:00:02:200");
                 } else {
+            console.log("IN: IF(END): ELSE: OUT: nextCardTime")
+
                     return this.addTime(lastTime, "00:02:200");
                 }
             }
         },
 
         deleteCurrentCard(currentId) {
+            console.log("IN: deleteCurrentCard")
             if (this.subtitleFile.length === 1) {
                 if (this.timeFormat === "00:00:00:000") {
                     const cardData = this.addLeftAndWidth({
@@ -821,6 +934,7 @@ export default {
                 }
                 this.currentFocusedCardId = null;
                 this.isFocused = false;
+                console.log("IN: IF: OUT: deleteCurrentCard")
                 return;
             } else {
                 if (this.currentFocusedCardId === currentId) {
@@ -832,39 +946,51 @@ export default {
                 );
                 this.subtitleFile.splice(index, 1);
                 this.$utils.updateFile(this.subtitleFile);
+                console.log("IN: ELSE: OUT: deleteCurrentCard")
+                return;
             }
+
             // const index = this.subtitleFile.findIndex(card => card.subtitleId === currentId);
         },
 
         setFocusOut(cardId) {
+            console.log("IN: setFocusOut")
             this.isFocused = false;
             if (cardId !== this.currentFocusedCardId) {
                 this.currentFocusedCardId = null;
             } else {
                 this.currentFocusedCardId = cardId;
             }
+            console.log("OUT: setFocusOut")
+
         },
 
         setFocusIn(cardId) {
+            console.log("IN: setFocusIn")
             if (this.currentFocusedCardId === null) {
                 this.isFocused = true;
                 this.$utils.updateFile(this.subtitleFile);
                 this.currentFocusedCardId = cardId;
-                console.log("InFocusNULL::", document.querySelector(".right-handle").style.left)
+                // console.log("InFocusNULL::", document.querySelector(".right-handle").style.left)
 
                 this.applyshorting();
 
             } else {
                 this.isFocused = true;
                 this.currentFocusedCardId = cardId;
-                console.log("InFocus::", document.querySelector(".right-handle").style)
+                // console.log("InFocus::", document.querySelector(".right-handle").style.left)
 
             }
+            console.log("OUT: setFocusIn")
+
         },
 
         saveSubtitles() {
+            console.log("IN: saveSubtitles")
             this.$utils.updateFile(this.subtitleFile);
             this.subtitleFile.sort((a, b) => {
+            console.log("OUT: saveSubtitles")
+
                 return (
                     this.timeStampToTimeUnit(a.startTimeStamp) -
                     this.timeStampToTimeUnit(b.startTimeStamp)
@@ -873,6 +999,7 @@ export default {
         },
 
         downloadSubtitleFile() {
+            console.log("IN: downloadSubtitleFile")
             const srtContent = this.generateSRT();
 
             const blob = new Blob([srtContent], {
@@ -895,9 +1022,11 @@ export default {
             // this.uploadSubtitle(blob)
 
             window.URL.revokeObjectURL(url);
+            console.log("OUT: downloadSubtitleFile")
         },
 
         generateSRT() {
+            console.log("IN: generateSRT")
             let srtContent = "";
 
             this.subtitleFile.forEach((card, index) => {
@@ -913,11 +1042,13 @@ export default {
 
                 srtContent += `${subtitleText}\n\n`;
             });
+            console.log("OUT: generateSRT")
 
             return srtContent;
         },
 
         updateLeftAndWidth(startTimeStamp, endTimeStamp) {
+            console.log("IN: updateLeftAndWidth")
             const startTime = this.timeStampToTimeUnit(startTimeStamp);
             const endTime = this.timeStampToTimeUnit(endTimeStamp);
             const duration = endTime - startTime;
@@ -925,10 +1056,12 @@ export default {
                 left: 10 + parseInt(startTime * this.viewSecondsSizeOnScale),
                 width: parseInt(duration * this.viewSecondsSizeOnScale),
             };
+            console.log("OUT: updateLeftAndWidth")
             return result;
         },
 
         addLeftAndWidth(cardData) {
+            console.log("IN: addLeftAndWidth")
             const startTime = this.timeStampToTimeUnit(cardData.startTimeStamp);
             const endTime = this.timeStampToTimeUnit(cardData.endTimeStamp);
             const duration = endTime - startTime;
@@ -938,11 +1071,15 @@ export default {
                 left: 10 + parseInt(startTime * this.viewSecondsSizeOnScale),
                 width: parseInt(duration * this.viewSecondsSizeOnScale),
             };
+            console.log("OUT: addLeftAndWidth")
             return newObj;
         },
 
         readSubtitleFile() {
+            console.log("IN: readSubtitleFile")
             try {
+            console.log("IN: TRY: readSubtitleFile")
+
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const subtitleText = event.target.result;
@@ -990,12 +1127,16 @@ export default {
                 };
                 reader.readAsText(this.selectedSubtitleFile);
             } catch (error) {
+                console.log("IN: CATCH: readSubtitleFile")
+
                 console.log(error);
             }
+            console.log("out: readSubtitleFile")
 
         },
 
         addNewCard() {
+            console.log("IN: addNewCard")
             const lastSubtitle =
                 this.subtitleFile[this.subtitleFile.length - 1]?.subtitle || "";
 
@@ -1003,6 +1144,7 @@ export default {
                 this.subtitleFile[this.subtitleFile.length - 1]?.endTimeStamp || "";
 
             if (lastSubtitle !== "") {
+                console.log("IN: IF: addNewCard")
                 const cardData = this.addLeftAndWidth({
                     startTimeStamp: this.nextCardTime(lastTime, true),
                     endTimeStamp: this.nextCardTime(lastTime, false, true),
@@ -1012,10 +1154,12 @@ export default {
 
                 this.$utils.addSubtitle(cardData);
             }
+            console.log("OUT: addNewCard")
         },
 
         // Need to update this method
         addNextCard(currentId) {
+            console.log("IN: addNextCard")
             const index = this.subtitleFile.findIndex(
                 (card) => card.subtitleId === currentId
             );
@@ -1026,6 +1170,7 @@ export default {
                 this.subtitleFile[index]?.subtitle !== "" &&
                 this.subtitleFile[index + 1]?.subtitle !== ""
             ) {
+                console.log("IN: IF: addNextCard")
                 const cardData = this.addLeftAndWidth({
                     startTimeStamp: this.nextCardTime(lastTime, true),
                     endTimeStamp: this.nextCardTime(lastTime, false, true),
@@ -1035,10 +1180,13 @@ export default {
                 this.subtitleFile.splice(index + 1, 0, cardData);
             }
             this.$utils.updateFile(this.subtitleFile);
+            console.log("OUT: addNextCard")
         },
     },
 
     created() {
+        console.log("IN: created")
+        
         const videoFileData = this.$store.state.videoFile;
         this.videoFileName = videoFileData.name;
         this.videoFileSize = videoFileData.size;
@@ -1054,10 +1202,18 @@ export default {
             );
         }
         this.setTimeFormat();
+        console.log("OUT: created")
     },
 
     mounted() {
         this.subtitleFile = this.$utils.getSubtitleFile();
+
+        this.viewSecondsSizeOnScale = parseInt(this.viewSecondsSizeOnScale)
+                this.subtitleFile.forEach((cardData) => {
+                    const result = this.updateLeftAndWidth(cardData.startTimeStamp, cardData.endTimeStamp)
+                    cardData.left = result.left
+                    cardData.width = result.width
+                })
 
         if (this.subtitleFile.length === 0) {
             if (this.timeFormat === "00:00:000") {
