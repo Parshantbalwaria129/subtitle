@@ -362,7 +362,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 .scale-container .scale-second-loop {
   height: 100%;
-  width: 100px;
   flex-grow: 0;
   flex-shrink: 0;
 }
